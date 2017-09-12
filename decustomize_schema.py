@@ -8,8 +8,6 @@ def decustomize_schema(json_record):
     #Extract subjects to single string
     if "subjects" in json_record:
         subjects = json_record['subjects'].split(',')
-        print(subjects)
-        print("LFLF")
         array = []
         for s in subjects:
             array.append({'subject':s})
@@ -21,95 +19,98 @@ def decustomize_schema(json_record):
                 'identifierType':"DOI"}
         del json_record['doi']
 
-    print(json_record)
-    print("FUNFUN")
-    exit()
     #Extract title
-    if "titles" in json_record:
-        titles = json_record['titles']
-        for t in titles:
-            if 'titleType' not in t:
-                json_record['title']=t['title']
+    if "title" in json_record:
+        json_record['titles'] = [{"title":json_record['title']}]
+        del json_record['title']
 
     #Change related identifier labels
     if "relatedIdentifiers" in json_record:
         for listing in json_record['relatedIdentifiers']:
-            listing['relatedIdentifierRelation'] = listing.pop('relationType')
-            listing['relatedIdentifierScheme'] = listing.pop('relatedIdentifierType')
+            listing['relationType'] = listing.pop('relatedIdentifierRelation') 
+            listing['relatedIdentifierType'] = listing.pop('relatedIdentifierScheme')
 
     #change author formatting
-    #We're only supporting ORCIDS, and losing all URIs
-    if "creators" in json_record:
-        authors = json_record['creators']
+    #Could do better with multiple affiliations
+    if "authors" in json_record:
+        authors = json_record['authors']
         newa = []
         for a in authors:
             new = {}
-            if 'affiliations' in a:
-                new['authorAffiliation'] = a['affiliations']
-            new['authorName'] = a['creatorName']
-            if 'nameIdentifiers' in a:
-                for n in a['nameIdentifiers']:
-                    if n['nameIdentifierScheme']=="ORCID":
-                        new['nameIdentifiers']={"nameIdentifier":n["nameIdentifier"],
-                            "NameIdentifierScheme": "ORCID"}
+            if 'authorAffiliation' in a:
+                new['affiliations'] = [a['authorAffiliation']]
+            new['creatorName'] = a['authorName']
             newa.append(new)
-        json_record['authors']=newa
+        json_record['creators']=newa
+        del json_record['authors']
 
-    #strip creator URI
+    #contributors
     if "contributors" in json_record:
         for c in json_record['contributors']:
-            if 'nameIdentifiers' in c:
-                for d in c['nameIdentifiers']:
-                    if "schemeURI" in d:
-                        d.pop("schemeURI")
-            if 'familyName' in c:
-                c.pop('familyName')
-                c.pop('givenName')
-
+            if 'contributorAffiliation' in c:
+                c['affiliations'] = [c.pop('contributorAffiliation')]
+            if 'contributorIdentifiers' in c:
+                for d in c['contributorIdentifiers']:
+                    d['nameIdentifier'] = d.pop('contributorIdentifier')
+                    d['nameIdentifierScheme'] = d.pop('contributorIdentifierScheme')
+                c['nameIdentifiers'] = c.pop('contributorIdentifiers')
+            if 'contributorEmail' in c:
+                del c['contributorEmail']
     #format
-    if "formats" in json_record:
-        json_record['format']=json_record.pop('formats')
+    if "format" in json_record:
+        json_record['formats']=[json_record.pop('format')]
 
     #dates
-    if "dates" in json_record:
-        dates = json_record['dates']
+    if "relevantDates" in json_record:
+        dates = json_record['relevantDates']
         for d in dates:
-            d['relevantDateValue']=d.pop('date')
-            d['relevantDateType']=d.pop('dateType')
-        json_record['relevantDates']=json_record.pop('dates')
+            d['dates']=d.pop('relevantDateValue')
+            d['dateType']=d.pop('relevantdateType')
+        json_record['dates']=json_record.pop('relevantDates')
 
-    #license
-    if 'rightsList' in json_record:
-        licenses = json_record['rightsList']
-        json_record['license']=licenses[0]['rights']
-        #Only transfers first license
+    #set publicationYear
+    year = json_record['publicationDate'].split('-')[0]
+    json_record['publicationYear'] = year
+    del json_record['publicationDate']
+
+    #license - no url available
+    if 'license' in json_record:
+        json_record['rightsList']=[{"rights":json_record.pop('license')}]
     
     #Funding
-    if 'fundingReferences' in json_record:
-        funding = json_record['fundingReferences']
+    if 'fundings' in json_record:
+        funding = json_record['fundings']
         newf = []
         for f in funding:
             frec = {}
-            if 'funderName' in f:
-                frec['fundingName'] = f['funderName']
+            if 'fundingName' in f:
+                frec['funderName'] = f['fundingName']
             #f['fundingName']=f.pop('funderName')
-            if 'awardNumber' in f:
-                frec['fundingAwardNumber']=f['awardNumber']['awardNumber']
+            if 'fundingAwardNumber' in f:
+                frec['awardNumber']=f['fundingAwardNumber']
             newf.append(frec)
         json_record['fundings']=newf
-        #Some fields not preserved
 
     #Geo
-    if 'geographicCoverage' in json_record:
-        json_record['geographicCoverage'] = json_record.pop('geoLocations')
+    if 'geoLocations' in json_record:
+        json_record['geoLocations'] = json_record.pop('geographicCoverage')
 
     #Publisher
-    if "publisher" in json_record:
-        publisher = {}
-        publisher['publisherName'] = json_record['publisher']
-        json_record['publishers'] = publisher
+    if "publishers" in json_record:
+        json_record['publisher'] = json_record['publishers']['publisherName']
+        del json_record['publishers']
 
-    #print(json.dumps(json_record))
+    #description
+    if "descriptions" in json_record:
+        for d in json_record["descriptions"]:
+            d["description"] = d.pop("descriptionValue")
+
+    others = ['files', 'owners', 'pid_value', 'control_number', '_oai',
+            '_form_uuid', 'electronic_location_and_access', 'access_right']
+    for v in others:
+        del json_record[v]
+
+    print(json.dumps(json_record))
     return json_record
 
 if __name__ == "__main__":
