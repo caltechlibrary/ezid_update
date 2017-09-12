@@ -109,7 +109,7 @@ def decustomize_schema(json_record):
     for v in others:
         del json_record[v]
 
-    print(json.dumps(json_record))
+    #print(json.dumps(json_record))
     return json_record
 
 if __name__ == "__main__":
