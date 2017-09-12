@@ -1,5 +1,4 @@
-# Convert a internal TIND CaltechDATA record into a  DataCite 4 standard schema json record to the customized internal
-# schema used by TIND in CaltechDATA
+# Convert a internal TIND CaltechDATA record into a  DataCite 4 standard schema json record
 import json
 import argparse
 
@@ -117,8 +116,8 @@ if __name__ == "__main__":
     #Read in from file for demo purposes
 
     parser = argparse.ArgumentParser(description=\
-                "customize_schema converts a DataCite 4 standard json record\
-                to TIND customized internal schema in CaltechDATA")
+                "decustomize_schema converts a internal TIND CaltechDATA record\
+       into a  DataCite 4 standard schema json record")
     parser.add_argument('json_files', nargs='+', help='json file name')
     args = parser.parse_args()
 
