@@ -18,4 +18,5 @@ for row in dois:
     metadata = r.json()['metadata']
     metadata = decustomize_schema(metadata)
 
+    print(metadata)
     update_doi(row[0],metadata,url+idv)

@@ -63,8 +63,8 @@ def decustomize_schema(json_record):
     if "relevantDates" in json_record:
         dates = json_record['relevantDates']
         for d in dates:
-            d['dates']=d.pop('relevantDateValue')
-            d['dateType']=d.pop('relevantdateType')
+            d['date']=d.pop('relevantDateValue')
+            d['dateType']=d.pop('relevantDateType')
         json_record['dates']=json_record.pop('relevantDates')
 
     #set publicationYear
@@ -86,13 +86,25 @@ def decustomize_schema(json_record):
                 frec['funderName'] = f['fundingName']
             #f['fundingName']=f.pop('funderName')
             if 'fundingAwardNumber' in f:
-                frec['awardNumber']=f['fundingAwardNumber']
+                frec['awardNumber']={'awardNumber':f['fundingAwardNumber']}
             newf.append(frec)
-        json_record['fundings']=newf
+        json_record['fundingReferences']=newf
+        del json_record['fundings']
 
     #Geo
-    if 'geoLocations' in json_record:
-        json_record['geoLocations'] = json_record.pop('geographicCoverage')
+    if 'geographicCoverage' in json_record:
+        geo = json_record['geographicCoverage']
+        newgeo = {}
+        if 'geoLocationPlace' in geo:
+            newgeo['geoLocationPlace'] = geo['geoLocationPlace'] 
+        if 'geoLocationPoint' in geo:
+            pt = geo['geoLocationPoint'][0]
+            newpt = {}
+            newpt['pointLatitude'] = float(pt['pointLatitude'])
+            newpt['pointLongitude'] = float(pt['pointLongitude'])
+            newgeo['geoLocationPoint'] = newpt
+        json_record['geoLocations'] = [newgeo]
+        del json_record['geographicCoverage']
 
     #Publisher
     if "publishers" in json_record:
