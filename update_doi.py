@@ -11,12 +11,12 @@ def update_doi(doi,metadata,url):
     'password':os.environ['EZID_PWD']})
     sid = ez.login()
 
-    #assert schema40.validate(metadata)
+    assert schema40.validate(metadata)
     #Debugging if this fails
-    v = schema40.validator.validate(metadata)
-    errors = sorted(v.iter_errors(instance), key=lambda e: e.path)
-    for error in errors:
-            print(error.message)
+    #v = schema40.validator.validate(metadata)
+    #errors = sorted(v.iter_errors(instance), key=lambda e: e.path)
+    #for error in errors:
+    #        print(error.message)
 
     xml = schema40.tostring(metadata)
 
@@ -24,6 +24,7 @@ def update_doi(doi,metadata,url):
     resp = ez.update('doi:'+doi,{'datacite':xml})
     print(resp)
     resp = ez.update('doi:'+doi,{'_target':url})
+    print(resp)
 
 #resp = ez.mint('doi:10.5072/FK2', {'datacite':xml})
 #resp = ez.mint('doi:10.5072/FK2',{'datacite.title': 'test title',
