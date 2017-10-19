@@ -111,6 +111,10 @@ def decustomize_schema(json_record):
         json_record['publisher'] = json_record['publishers']['publisherName']
         del json_record['publishers']
 
+    #Strip ID
+    if "id" in json_record:
+        del json_record['id']
+
     #description
     if "descriptions" in json_record:
         for d in json_record["descriptions"]:

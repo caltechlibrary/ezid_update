@@ -11,6 +11,7 @@ def update_doi(doi,metadata,url):
     'password':os.environ['EZID_PWD']})
     sid = ez.login()
 
+    #print(metadata)
     assert schema40.validate(metadata)
     #Debugging if this fails
     #v = schema40.validator.validate(metadata)
